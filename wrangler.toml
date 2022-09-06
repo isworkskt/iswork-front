@@ -1,0 +1,11 @@
+name = "iswork"
+#type = "webpack"
+usage_model = 'bundled'
+compatibility_flags = []
+workers_dev = true
+compatibility_date = "2022-09-01"
+kv_namespaces = [
+         #{ binding = "iswork", id = "1d2af16821d143c0866c7ade7da967fc" },
+         #{ binding = "iswork", preview_id = "64489a40ac584fb1b2d238147a008305", id = "1d2af16821d143c0866c7ade7da967fc" }
+         { binding = "iswork", id = "d2b99cd2608b407b8abfcf3f42c6b09a", preview_id = "71081582a6b6425684dd37999cb8f9c3" }
+]

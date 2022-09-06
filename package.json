@@ -1,0 +1,38 @@
+{
+	"name": "my-app",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"test": "playwright test",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --check .",
+		"format": "prettier --write .",
+		"wg": " npx wrangler pages dev -- npm run dev"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.25.0",
+		"@sveltejs/adapter-auto": "next",
+		"@sveltejs/adapter-cloudflare": "^1.0.0-next.32",
+		"@sveltejs/kit": "next",
+		"carbon-components": "^10.56.0",
+		"carbon-components-svelte": "^0.70.2",
+		"prettier": "^2.6.2",
+		"prettier-plugin-svelte": "^2.7.0",
+		"sass": "^1.54.5",
+		"svelte": "^3.44.0",
+		"svelte-check": "^2.7.1",
+		"tslib": "^2.3.1",
+		"typescript": "^4.7.4",
+		"vite": "^3.0.4",
+		"wrangler": "^2.0.28"
+	},
+	"type": "module",
+	"dependencies": {
+		"firebase": "^9.9.4",
+		"firebaseui": "^6.0.1"
+	}
+}
