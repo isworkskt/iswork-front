@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { error } from '@sveltejs/kit';
 
-	import { DatePicker, DatePickerInput, HeaderUtilities } from 'carbon-components-svelte';
-	import { Dropdown, Form ,Tile } from 'carbon-components-svelte';
+	import { DatePicker, DatePickerInput, FormGroup, HeaderUtilities, Select, SelectItem } from 'carbon-components-svelte';
+	import { Dropdown, Form, Tile } from 'carbon-components-svelte';
 	import {
 		StructuredList,
 		StructuredListHead,
@@ -10,18 +9,17 @@
 		StructuredListCell,
 		StructuredListBody
 	} from 'carbon-components-svelte';
-	import { Button } from 'carbon-components-svelte';
+	import { Button , DataTable } from 'carbon-components-svelte';
 	interface item {
 		name: string;
 		amount: number;
 	}
 
 	let items: item[] = [
-		{ name: 'Volleyball', amount: 69 },
-		{ name: 'Basketball', amount: 727 },
-		{ name: 'Football', amount: 420 }
+				{ amount: 727, name: 'Basketball'},
+				{ amount: 420, name: 'Football'},
+				{ amount: 69, name: 'Volleyball' }
 	];
-
 	import { initializeApp } from 'firebase/app';
 	const firebaseConfig = {
 		apiKey: 'AIzaSyDNUkyCXJPxazOkVAV8TLGq6A_XGRZYAew',
@@ -79,75 +77,104 @@
 		Row,
 		Column
 	} from 'carbon-components-svelte';
+let preview = items.map((item,index) => {return Object.assign(item,{id:index})});
+let checkend = false;
+let start:string|undefined;
+let end:string|undefined;
+let startinvalid:boolean = false;
+let endinvalid:boolean = false;
+function checkHoliday(ddmmyy:string|undefined) {
+	console.log(ddmmyy);
+	if (ddmmyy === undefined || ddmmyy === "") {
+		return false;
+	}
+	let d = ddmmyy.split("/");
+	let dat = new Date(`${d[2]}-${d[1]}-${d[0]}T00:00:00.000+07:00`).getDay();
+	//@ts-ignore
+	if (dat=== 0) {
+		return true;
+	}
+	if (dat === 6) {
+		return true;
+	}
+		return false;
+
+}
 </script>
 
 <Header company="SKT" platformName="Balls app" />
 
-
 <Content>
+	<Tile light>
+		<Grid fullWidth
+			><Row noGutter>
+				{#if email}
+					<Column noGutter lg={8}><h2>{email}</h2></Column><Column />
+					<Column noGutter lg={2}
+						><Button
+							kind="tertiary"
+							on:click={() =>
+								signOut(auth)
+									.then(() => {
+										// Sign-out successful.
+										email = null;
+									})
+									.catch((error) => {
+										console.error(error);
+										// An error happened.
+									})}>ออกจากระบบ</Button
+						></Column
+					>
+				{:else}
+					<Button kind="tertiary" on:click={() => signInWithRedirect(auth, provider)}
+						>ลงชื่อเข้าใช้</Button
+					>
+				{/if}</Row
+			>
+		</Grid>
+	</Tile>
 	<Tile>
-		<Grid fullWidth><Row noGutter>
-	{#if email}
-	<Column  noGutter lg={8}><h2>{email}</h2></Column><Column></Column>
-	<Column noGutter lg={2}><Button kind="tertiary"
-	on:click={() =>
-		signOut(auth)
-			.then(() => {
-				// Sign-out successful.
-				email = null;
-			})
-			.catch((error) => {
-				console.error(error);
-				// An error happened.
-			})}>Sign out</Button></Column>
-{:else}
-<Button kind="tertiary" on:click={() => signInWithRedirect(auth, provider)}>Sign in</Button>
-		
-	{/if}</Row>
-</Grid>
-</Tile>
 	<h1>ยืมของ</h1>
 
-	<Form
+
+
+		<DataTable sortable title="จำนวนของ" headers={[{key:"name",value:"ชนิด",sort:false},{key:"amount",value:"จำนวน"}]} rows={preview}
+		></DataTable>
+	</Tile>
+		<Form
 		on:submit={(e) => {
 			e.preventDefault();
 			console.log('submit', e);
 		}}
 	>
-		<Dropdown
-			titleText="ยืม"
-			selectedId="0"
-			items={items.map((e, index) => {
+	<Tile>
+	<FormGroup>
+		<Select id="select-1" labelText="เลือกยืมของ" value="placeholder-item">
+			<SelectItem
+				text=""
+				disabled hidden
+			/>
+			{#each items.map((e, index) => {
 				return { id: index.toString(), text: e.name };
-			})}
-		/>
-
-		<h2>จำนวนของ</h2>
-		<StructuredList>
-			<StructuredListHead>
-				<StructuredListRow head>
-					<StructuredListCell head>ชนิด</StructuredListCell>
-					<StructuredListCell head>จำนวน</StructuredListCell>
-				</StructuredListRow>
-			</StructuredListHead>
-			<StructuredListBody>
-				{#each items as item}
-					<StructuredListRow>
-						<StructuredListCell noWrap>{item.name}</StructuredListCell>
-						{item.amount}
-					</StructuredListRow>
-				{/each}
-			</StructuredListBody>
-		</StructuredList>
-
-		<h2>ระยะเวลาการยืม</h2>
-		<DatePicker datePickerType="range" on:change>
-			<DatePickerInput labelText="เริ่มต้นการยืม" placeholder="mm/dd/yyyy" />
-			<DatePickerInput labelText="จบการยืม" placeholder="mm/dd/yyyy" />
+			}) as item}
+			<SelectItem value={item.text} text={item.text} />
+			{/each}
+	
+	
+		</Select>
+	</FormGroup>
+	<FormGroup>
+		<DatePicker datePickerType="range" bind:valueFrom={start} bind:valueTo={end} dateFormat="d/m/Y"  on:change>
+			<DatePickerInput labelText="เริ่มต้นการยืม"  invalid={checkHoliday(start)} invalidText={checkHoliday(start) ? "ไม่รองรับวันหยุด" : undefined} placeholder="dd/mm/yyyy" />
+			<DatePickerInput labelText="จบการยืม"  invalid={checkHoliday(end)} invalidText={checkHoliday(end) ? "ไม่รองรับวันหยุด" : undefined} placeholder="dd/mm/yyyy" />
 		</DatePicker>
+		{#if start && end}
+		{start}-{end}
+	{/if}
+	</FormGroup>
 
 		<Button type="submit">ยืม</Button>
-	</Form>
+		</Tile>	</Form>
 </Content>
 
 <style lang="scss">
