@@ -27,7 +27,7 @@ provider.setCustomParameters({
 const auth = getAuth();
 let uid:string;
 auth.useDeviceLanguage();
-let email:string;
+let email:string|null;
 onAuthStateChanged(auth, (user) => {
   if (user) {
     // User is signed in, see docs for a list of available properties
