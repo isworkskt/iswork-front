@@ -18,6 +18,8 @@
 		"@sveltejs/adapter-auto": "next",
 		"@sveltejs/adapter-cloudflare": "^1.0.0-next.32",
 		"@sveltejs/kit": "next",
+		"@types/lodash": "^4.14.184",
+		"@types/lodash-es": "^4.17.6",
 		"carbon-components": "^10.56.0",
 		"carbon-components-svelte": "^0.70.2",
 		"prettier": "^2.6.2",
@@ -33,6 +35,8 @@
 	"type": "module",
 	"dependencies": {
 		"firebase": "^9.9.4",
-		"firebaseui": "^6.0.1"
+		"firebaseui": "^6.0.1",
+		"lodash": "^4.17.21",
+		"lodash-es": "^4.17.21"
 	}
 }

@@ -3,8 +3,14 @@
 		DatePicker,
 		DatePickerInput,
 		FormGroup,
+		InlineNotification,
+		NumberInput,
 		Select,
-		SelectItem
+		SelectItem,
+SkeletonPlaceholder,
+Toolbar,
+ToolbarContent,
+ToolbarSearch
 	} from 'carbon-components-svelte';
 	import { Form, Tile } from 'carbon-components-svelte';
 	import { Button, DataTable } from 'carbon-components-svelte';
@@ -17,23 +23,25 @@
 	} from 'carbon-components-svelte';
 	import {
 		getAuth,
+		getIdTokenResult,
 		GoogleAuthProvider,
 		onAuthStateChanged,
 		signInWithRedirect,
 		signOut
 	} from 'firebase/auth';
+	import { onMount } from "svelte";
+	let items: Promise<Item[]> = fetch("https://ballapi.sencha.moe/api/Balls/Public").then(res => res.json()).catch((err) => {console.error("jsonerr",err)});
+
+	// let items = JSON.parse('[{"name":"basketball","stockLeft":68},{"name":"volleyball","stockLeft":416},{"name":"basketball","stockLeft":2}]');
 	
-	interface item {
+	interface Item {
 		name: string;
-		amount: number;
+		stockLeft: number;
 	}
 
-	let items: item[] = [
-		{ amount: 727, name: 'Basketball' },
-		{ amount: 420, name: 'Football' },
-		{ amount: 69, name: 'Volleyball' }
-	];
+
 	import { initializeApp } from 'firebase/app';
+import { json } from '@sveltejs/kit';
 	const firebaseConfig = {
 		apiKey: 'AIzaSyDNUkyCXJPxazOkVAV8TLGq6A_XGRZYAew',
 
@@ -49,7 +57,7 @@
 	};
 
 	initializeApp(firebaseConfig);
-
+	let admin = false;
 
 	const provider = new GoogleAuthProvider();
 	provider.setCustomParameters({
@@ -59,6 +67,7 @@
 	let uid: string;
 	auth.useDeviceLanguage();
 	let email: string | null;
+	let token:string|null;
 	onAuthStateChanged(auth, (user) => {
 		if (user) {
 			// User is signed in, see docs for a list of available properties
@@ -67,15 +76,21 @@
 			//user =user.email;
 			email = user.email;
 			// ...
+			user.getIdTokenResult(true).then((idTokenResult) => {
+				console.log(idTokenResult.claims);
+				admin = (idTokenResult.claims.admin as unknown as boolean)
+				console.log("idtoken: ",idTokenResult.token)
+				token = idTokenResult.token;
+			})
 		} else {
 			// User is signed out
 			// ...
 		}
 	});
 
-	let preview = items.map((item, index) => {
-		return Object.assign(item, { id: index });
-	});
+	// let preview = items.map((item, index) => {
+	// 	return Object.assign(item, { id: index });
+	// });
 	let start: string | undefined;
 	let end: string | undefined;
 	function checkHoliday(ddmmyy: string | undefined) {
@@ -91,6 +106,23 @@
 		return false;
 	}
 	
+
+let selected: any;
+
+async function form(e:SubmitEvent) {
+	
+			e.preventDefault();
+			const resp = await fetch("", {
+    method: "POST",
+    body: new URLSearchParams(new FormData((e.target as HTMLFormElement))),
+  });
+  //const body = resp.json();
+  //console.log(body);
+			console.log('submit', Object.fromEntries(new FormData((e.target as HTMLFormElement)).entries()));
+		
+}
+
+
 </script>
 
 <Header company="SKT" platformName="Balls app" />
@@ -100,7 +132,7 @@
 		<Grid fullWidth
 			><Row noGutter>
 				{#if email}
-					<Column noGutter lg={8}><h2>{email}</h2></Column><Column />
+					<Column noGutter lg={8}><h2>{admin ? "[admin] " : ""} {email}</h2></Column><Column />
 					<Column noGutter lg={2}
 						><Button
 							kind="tertiary"
@@ -127,6 +159,11 @@
 			>
 		</Grid>
 	</Tile>
+	{#await items}
+	<Tile>
+	<SkeletonPlaceholder style="height: 36rem; width: 100%" />
+</Tile>
+{:then itemss}
 	<Tile>
 		<h1>ยืมของ</h1>
 
@@ -135,27 +172,54 @@
 			title="จำนวนของ"
 			headers={[
 				{ key: 'name', value: 'ชนิด', sort: false },
-				{ key: 'amount', value: 'จำนวน' }
+				{ key: 'stockLeft', value: 'จำนวน' }
 			]}
-			rows={preview}
-		/>
+			rows={itemss.map((item, index) => {
+				 	return Object.assign(item, { id: index });
+				 })}
+		>
+		<Toolbar>
+			<ToolbarContent>
+			  <ToolbarSearch
+				persistent
+				value=""
+				shouldFilterRows
+			  />
+			</ToolbarContent>
+		  </Toolbar>
+		</DataTable>
+
+		
+		
+
 	</Tile>
 	<Form
-		on:submit={(e) => {
-			e.preventDefault();
-			console.log('submit', e);
-		}}
+		on:submit={form}
 	>
 		<Tile>
 			<FormGroup>
-				<Select id="select-1" labelText="เลือกยืมของ" disabled={!email} value="placeholder-item">
+				<Grid fullWidth noGutterLeft>
+					<Row>
+					<Column max={5}>
+				<Select id="select-1" labelText="เลือกยืมของ" disabled={!email} bind:selected on:change={() => {console.log(selected)}} name="name">
 					<SelectItem text="" disabled hidden />
-					{#each items.map((e, index) => {
-						return { id: index.toString(), text: e.name };
+					{#each itemss.map((e, index) => {
+						return { id: index.toString(), name: e.name,stockLeft:e.stockLeft };
 					}) as item}
-						<SelectItem value={item.text} text={item.text} />
+						<SelectItem value={item.name} text={item.name} disabled={item.stockLeft === 0} />
 					{/each}
-				</Select>
+				</Select></Column><Column max={3}>
+				<NumberInput
+  min={1}
+  max={itemss.find(element => element.name === selected)?.stockLeft||1}
+  value={1}
+   id="amount" name="amount"
+  hideSteppers={selected === ""}
+  invalidText={selected !== "" ? `จำนวนต้องมีค่าระหว่าง 1 ถึง ${itemss.find(element => element.name === selected)?.stockLeft||1}` : 'กรุณาเลือกของ'}
+  label="จำนวน"
+/></Column></Row>
+</Grid>
+
 			</FormGroup>
 			<FormGroup >
 				<DatePicker
@@ -170,15 +234,14 @@
 				
 					<Row>
 						<Column noGutterRight>
-					<DatePickerInput
+					<DatePickerInput type="text" id="datemin" name="datemin"
 						labelText="เริ่มต้นการยืม"
 						invalid={checkHoliday(start)}
 						invalidText={checkHoliday(start) ? 'ไม่รองรับวันหยุด' : undefined}
 						disabled={!email}
 						placeholder="dd/mm/yyyy"
-						id="owo"
 					/></Column><Column noGutterLeft>
-					<DatePickerInput
+					<DatePickerInput type="text" id="datemax" name="datemax"
 						labelText="จบการยืม"
 						invalid={checkHoliday(end)}
 						invalidText={checkHoliday(end) ? 'ไม่รองรับวันหยุด' : undefined}
@@ -194,9 +257,30 @@
 				{/if}
 			</FormGroup>
 
-			<Button type="submit" disabled={!email}>ยืม</Button>
+			<Button type="submit"  disabled={!email || selected === "" }>ยืม</Button>
 		</Tile>
+		
 	</Form>
+	{:catch err}
+	
+
+
+
+<InlineNotification
+title="Error:"
+subtitle={`{err}`}
+/>
+
+
+	{/await}
+	{#if admin}
+admin
+
+<Button on:click={() => {fetch("https://ballapi.sencha.moe/api/Balls/",{headers:{'Authorization':`Bearer ${token}`}}).then(res => res.json()).then(console.log)}}>test token</Button>
+
+
+
+{/if}
 </Content>
 
 <style lang="scss">
