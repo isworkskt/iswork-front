@@ -209,7 +209,7 @@ async function form(e:SubmitEvent) {
 						<SelectItem value={item.name} text={item.name} disabled={item.stockLeft === 0} />
 					{/each}
 				</Select></Column><Column max={3}>
-				<NumberInput
+				<NumberInput disabled={!email}
   min={1}
   max={itemss.find(element => element.name === selected)?.stockLeft||1}
   value={1}
@@ -257,7 +257,7 @@ async function form(e:SubmitEvent) {
 				{/if}
 			</FormGroup>
 
-			<Button type="submit"  disabled={!email || selected === "" }>ยืม</Button>
+			<Button type="submit"  disabled={!email || selected === "" || checkHoliday(start) || checkHoliday(end) }>ยืม</Button>
 		</Tile>
 		
 	</Form>
