@@ -27,7 +27,7 @@
 	} from 'firebase/auth';
 	import { onMount } from 'svelte';
 	//const API = 'http://localhost:5140';
-	const API = "https://ballapi.sencha.moe";
+	const API = 'https://ballapi.sencha.moe';
 	let items: Promise<Item[]> = fetch(`${API}/api/Balls/Public`)
 		.then((res) => res.json())
 		.catch((err) => {
@@ -112,10 +112,12 @@
 
 	async function form(e: SubmitEvent) {
 		e.preventDefault();
-		let obj:{type:string,amount:number} = Object.fromEntries(new FormData(e.target as HTMLFormElement).entries());
+		let obj: { type: string; amount: number } = Object.fromEntries(
+			new FormData(e.target as HTMLFormElement).entries()
+		);
 		const resp = await fetch(`${API}/api/Balls/${obj.type}/${obj.amount}`, {
 			method: 'PUT',
-			headers: { 'Content-Type': 'application/json',Authorization: `Bearer ${token}` },
+			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 			body: new URLSearchParams(new FormData(e.target as HTMLFormElement))
 		});
 		//const body = resp.json();
@@ -126,20 +128,30 @@
 	import '@carbon/charts/styles.css';
 
 	import { BarChartSimple } from '@carbon/charts-svelte';
-	function a(s:Item[]) {
-		let a: { group: string; value: number; }[] = [];
-		s.forEach(e => {a.push({group:e.type,value:e.used})})
+	function a(s: Item[]) {
+		let a: { group: string; value: number }[] = [];
+		s.forEach((e) => {
+			a.push({ group: e.type, value: e.used });
+		});
 
 		return a;
 	}
 	let status;
-	let newobject = {name:"",amount:1};
-	let success:any = null;
-	let error:any = null;
+	let newobject = { name: '', amount: 1 };
+	let success: any = null;
+	let error: any = null;
 </script>
 
 <Header company="SKT" platformName="Balls app" />
 
+<svelte:head>
+	<title>SKT Balls app</title>
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+</svelte:head
+>
 <Content>
 	<Tile light>
 		<Grid fullWidth
@@ -286,76 +298,86 @@
 					{/if}
 				</FormGroup> -->
 
-				<Button
-					type="submit"
-					disabled={!email || selected === ''}
-					>ยืม</Button
-				>
+				<Button type="submit" disabled={!email || selected === ''}>ยืม</Button>
 			</Tile>
 		</Form>
 		<Tile>
-<Grid>
-	<Row><Column sm={3}>
-			<BarChartSimple
-			theme="g100"
-			data={a(itemss)}
-			animations
-			options={{
-			  title: "จำนวนของที่ถูกยืมไปในวันนี้",
-			  height: "20rem",
-			  resizable:false,
-			  axes: {
-				left: { mapsTo: "value" },
-				//@ts-ignore
-				bottom: { mapsTo: "group", scaleType: "labels" },
-			  },
-			}}
-			
-		  />
-		</Column><Column>
-
-			<DataTable
-			sortable
-			title="จำนวนของที่ถูกยืมไปในวันนี้"
-			headers={[
-				{ key: 'type', value: 'ชนิด', sort: false },
-				{ key: 'used', value: 'ถูกยืมไป' }
-			]}
-			rows={itemss.map((item, index) => {
-				return Object.assign(item, { id: index });
-			})}
-		>
-		</DataTable>
-		</Column></Row>
-		  
-		</Grid>
+			<Grid>
+				<Row
+					><Column sm={3}>
+						<BarChartSimple
+							theme="g100"
+							data={a(itemss)}
+							animations
+							options={{
+								title: 'จำนวนของที่ถูกยืมไปในวันนี้',
+								height: '20rem',
+								resizable: false,
+								axes: {
+									left: { mapsTo: 'value' },
+									//@ts-ignore
+									bottom: { mapsTo: 'group', scaleType: 'labels' }
+								}
+							}}
+						/>
+					</Column><Column>
+						<DataTable
+							sortable
+							title="จำนวนของที่ถูกยืมไปในวันนี้"
+							headers={[
+								{ key: 'type', value: 'ชนิด', sort: false },
+								{ key: 'used', value: 'ถูกยืมไป' }
+							]}
+							rows={itemss.map((item, index) => {
+								return Object.assign(item, { id: index });
+							})}
+						/>
+					</Column></Row
+				>
+			</Grid>
 		</Tile>
 	{:catch err}
 		<InlineNotification title="Error " subtitle={`{err}`} />
 	{/await}
 	{#if admin}
 		admin
-{#if success !== null}
-<InlineNotification kind="success" title="Success " subtitle={success} />
-{/if}
-{#if error !== null}
-<InlineNotification title="Error:" subtitle={error} />
-{/if}
-<TextInput labelText="Object name" bind:value={newobject.name} placeholder="Enter object name.." />
-		<NumberInput
-  label="Amount of object"
-  bind:value={newobject.amount}
-/>
+		{#if success !== null}
+			<InlineNotification kind="success" title="Success " subtitle={success} />
+		{/if}
+		{#if error !== null}
+			<InlineNotification title="Error:" subtitle={error} />
+		{/if}
+		<TextInput
+			labelText="Object name"
+			bind:value={newobject.name}
+			placeholder="Enter object name.."
+		/>
+		<NumberInput label="Amount of object" bind:value={newobject.amount} />
 		<Button
 			on:click={() => {
-				fetch(`${API}/api/Balls/`, { headers: { 'Content-Type': 'application/json',Authorization: `Bearer ${token}` },method:"POST",body: JSON.stringify({type:newobject.name,amount:newobject.amount,users:[]}) })
+				fetch(`${API}/api/Balls/`, {
+					headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+					method: 'POST',
+					body: JSON.stringify({ type: newobject.name, amount: newobject.amount, users: [] })
+				})
 					.then((res) => res.text())
-					.then(x => {status = x;return x}).then(console.log).then((value) => {success=value} ,(reason) => {error=reason})
+					.then((x) => {
+						status = x;
+						return x;
+					})
+					.then(console.log)
+					.then(
+						(value) => {
+							success = value;
+						},
+						(reason) => {
+							error = reason;
+						}
+					);
 			}}>Add Object</Button
 		>
 	{/if}
 </Content>
-
 
 <style lang="scss">
 	#uwu {
