@@ -123,6 +123,7 @@
 		//const body = resp.json();
 		//console.log(body);
 		console.log('submit', Object.fromEntries(new FormData(e.target as HTMLFormElement).entries()));
+		location.reload()
 	}
 	import '@carbon/styles/css/styles.css';
 	import '@carbon/charts/styles.css';
