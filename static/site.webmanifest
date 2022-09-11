@@ -1,1 +1,22 @@
-{"name":"SKT Balls app","short_name":"Balls app","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#b4b9e1","background_color":"#161616","display":"standalone"}
+{
+    "name": "SKT Balls app",
+    "description": "Help manages borrowing of balls.",
+    "short_name": "Balls app",
+    "categories": ["education"],
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#161616",
+    "background_color": "#161616",
+    "display": "minimal-ui",
+    "start_url": "https://meow.sencha.moe"
+}
