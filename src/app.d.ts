@@ -10,14 +10,13 @@ declare namespace App {
 	// interface PrivateEnv {}
 	// interface PublicEnv {}
 
-	
-   interface Platform {
-	       env: {
-	           iswork: KVNamespace;
-	       };
-   }
-	
-   interface Session {}
+	interface Platform {
+		env: {
+			iswork: KVNamespace;
+		};
+	}
 
-   interface Stuff {}
+	interface Session {}
+
+	interface Stuff {}
 }

@@ -1,9 +1,6 @@
 <script lang="ts">
 	import {
-		DatePicker,
-		DatePickerInput,
 		ExpandableTile,
-		FileUploaderSkeleton,
 		FormGroup,
 		InlineNotification,
 		ListItem,
@@ -25,26 +22,16 @@
 	import { Header, Content, Grid, Row, Column } from 'carbon-components-svelte';
 	import {
 		getAuth,
-		getIdTokenResult,
 		GoogleAuthProvider,
 		onAuthStateChanged,
 		signInWithRedirect,
 		signOut
 	} from 'firebase/auth';
-	import { onMount } from 'svelte';
+
 	//const API = 'http://localhost:5140';
 	const API = 'https://ballapi.sencha.moe';
-	let items: Promise<Item[]> = fetch(`${API}/api/Balls/Public`)
-		.then((res) => res.json())
-		.catch((err) => {
-			console.error('jsonerr', err);
-		});
+	let items: Promise<Item[]> = fetch(`${API}/api/Balls/Public`).then((res) => res.json());
 
-	interface balllog {
-		type: string;
-		amount: number;
-		users: user[];
-	}
 	interface user {
 		email: string;
 		amount: number;
@@ -127,26 +114,33 @@
 
 	let selected: any;
 
-	async function logs() {
+	interface balllog {
+		type: string;
+		amount: number;
+		users: user[];
+	}
+	async function logs(): Promise<balllog[]> {
 		let d = await fetch(`${API}/api/Balls/`, {
 			method: 'GET',
 			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 		}).then((res) => res.json());
-		return d;
+		return d as balllog[];
 	}
 
 	async function form(e: SubmitEvent) {
 		e.preventDefault();
+		//@ts-ignore
 		let obj: { type: string; amount: number } = Object.fromEntries(
 			new FormData(e.target as HTMLFormElement).entries()
 		);
 		const resp = await fetch(`${API}/api/Balls/${obj.type}/${obj.amount}`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+			//@ts-ignore
 			body: new URLSearchParams(new FormData(e.target as HTMLFormElement))
 		});
-		//const body = resp.json();
-		//console.log(body);
+		const body = resp.json();
+		console.log(body);
 		console.log('submit', Object.fromEntries(new FormData(e.target as HTMLFormElement).entries()));
 		location.reload();
 	}
@@ -156,6 +150,7 @@
 	import { BarChartSimple } from '@carbon/charts-svelte';
 	import type { interfaces } from '@carbon/charts';
 	import Page from './login/+page.svelte';
+	import { onMount } from 'svelte';
 	function a(s: Item[]) {
 		let a: { group: string; value: number }[] = [];
 		s.forEach((e) => {
@@ -164,7 +159,6 @@
 
 		return a;
 	}
-	let status;
 	let newobject = { name: '', amount: 1 };
 	let success: any = null;
 	let error: any = null;
@@ -331,7 +325,7 @@
 									{start}-{end}
 								{/if}
 							</FormGroup> -->
-			
+
 							<Button type="submit" disabled={!email || selected === ''}>ยืม</Button>
 						</Tile>
 					</Form>
@@ -370,94 +364,89 @@
 							>
 						</Grid>
 					</Tile>
-					
 				</TabContent>
 				{#if admin}
-					
-						<TabContent>
-							{#await logs()}
-								<SkeletonPlaceholder style="height: 36rem; width: 100%" />
-							{:then d}
-								{#each d as f}
-									<ExpandableTile>
-										<div slot="above">
-											{f.type}
-										</div>
-										<div slot="below">
-											{#each [...f.users].reverse() as user}
-												<UnorderedList>
-													<b>{user.email}</b>
-													<UnorderedList nested>
-														<ListItem>เวลา: {new Date(user.time).toLocaleString()}</ListItem>
-														<ListItem>จำนวน: {user.amount}</ListItem>
-													</UnorderedList>
+					<TabContent>
+						{#await logs()}
+							<SkeletonPlaceholder style="height: 36rem; width: 100%" />
+						{:then d}
+							{#each d as f}
+								<ExpandableTile>
+									<div slot="above">
+										{f.type}
+									</div>
+									<div slot="below">
+										{#each [...f.users].reverse() as user}
+											<UnorderedList>
+												<b>{user.email}</b>
+												<UnorderedList nested>
+													<ListItem>เวลา: {new Date(user.time).toLocaleString()}</ListItem>
+													<ListItem>จำนวน: {user.amount}</ListItem>
 												</UnorderedList>
-											{/each}
-										</div>
-									</ExpandableTile>
-								{/each}
-								<!-- {JSON.stringify(d)} -->
-							{:catch e}
-								{e}
-							{/await}
-							<Tile>
-								Manage Objects
-								{#if success !== null}
-									<InlineNotification kind="success" title="Success " subtitle={success} />
-								{/if}
-								{#if error !== null}
-									<InlineNotification title="Error:" subtitle={error} />
-								{/if}
-								<TextInput
-									labelText="Object name"
-									bind:value={newobject.name}
-									placeholder="Enter object name.."
-								/>
-								<NumberInput label="Amount of object" bind:value={newobject.amount} />
-								<Button
-									on:click={() => {
-										fetch(`${API}/api/Balls/`, {
-											headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-											method: 'POST',
-											body: JSON.stringify({ type: newobject.name, amount: newobject.amount, users: [] })
+											</UnorderedList>
+										{/each}
+									</div>
+								</ExpandableTile>
+							{/each}
+							<!-- {JSON.stringify(d)} -->
+						{:catch e}
+							{e}
+						{/await}
+						<Tile>
+							Manage Objects
+							{#if success !== null}
+								<InlineNotification kind="success" title="Success " subtitle={success} />
+							{/if}
+							{#if error !== null}
+								<InlineNotification title="Error:" subtitle={error} />
+							{/if}
+							<TextInput
+								labelText="Object name"
+								bind:value={newobject.name}
+								placeholder="Enter object name.."
+							/>
+							<NumberInput label="Amount of object" bind:value={newobject.amount} />
+							<Button
+								on:click={() => {
+									fetch(`${API}/api/Balls/`, {
+										headers: {
+											'Content-Type': 'application/json',
+											Authorization: `Bearer ${token}`
+										},
+										method: 'POST',
+										body: JSON.stringify({
+											type: newobject.name,
+											amount: newobject.amount,
+											users: []
 										})
-											.then((res) => res.text())
-											.then((x) => {
-												status = x;
-												return x;
-											})
-											.then(console.log)
-											.then(
-												(value) => {
-													success = value;
-												},
-												(reason) => {
-													error = reason;
-												}
-											);
-									}}>Add Object</Button
-								>
-		
-							</Tile>
-						</TabContent>
-					
-
+									})
+										.then((res) => res.text())
+										.then((x) => {
+											status = x;
+											return x;
+										})
+										.then(console.log)
+										.then(
+											(value) => {
+												success = value;
+											},
+											(reason) => {
+												error = reason;
+											}
+										);
+								}}>Add Object</Button
+							>
+						</Tile>
+					</TabContent>
 				{/if}
 			</svelte:fragment>
 		</Tabs>
-
 	{:catch err}
-		<InlineNotification title="Error " subtitle={`{err}`} />
+		<InlineNotification title="Error " subtitle={err} />
 	{/await}
 </Content>
 
 <style lang="scss">
-	#uwu {
-		.bx--date-picker-container {
-			align-items: start !important;
-			justify-content: start !important;
-		}
-	}
-	$css--reset: false;
-	@import 'carbon-components-svelte/css/all.css';
+	@import 'carbon-components-svelte/css/g100.css';
+	@import 'carbon-components/scss/globals/scss/styles.scss';
 </style>
