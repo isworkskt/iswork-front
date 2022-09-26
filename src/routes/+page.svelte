@@ -448,5 +448,4 @@
 
 <style lang="scss">
 @import "carbon-components-svelte/css/g100.css";
-@import 'carbon-components/scss/globals/scss/styles.scss';
 </style>
