@@ -28,8 +28,8 @@
 		signOut
 	} from 'firebase/auth';
 
-	const API = 'http://localhost:5140';
-	//const API = 'https://ballapi.sencha.moe';
+	//const API = 'http://localhost:5140';
+	const API = 'https://ballapi.sencha.moe';
 	let items: Promise<Item[]> = fetch(`${API}/api/Balls/Public`).then((res) => res.json());
 
 	interface user {
